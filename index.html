@@ -3,119 +3,128 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Lano AI — مساعد مطعم لانو 🤖🍝</title>
+<title>Lano AI 🍝</title>
 <style>
-  body{font-family:"Tajawal",sans-serif;background:#3E1A1A;color:#FAF7EF;margin:0;display:flex;justify-content:center;align-items:center;height:100vh;}
-  .app{width:90%;max-width:600px;background:#4A1E1E;padding:16px;border-radius:14px;box-shadow:0 0 10px rgba(0,0,0,.3);}
-  h2{text-align:center;margin-bottom:12px;color:#EDE3D6;}
-  .chat{height:60vh;overflow-y:auto;padding:10px;background:#411919;border-radius:10px;}
-  .msg{padding:10px 14px;margin:6px 0;border-radius:10px;max-width:80%;line-height:1.5;}
-  .ai{background:#EDE3D6;color:#2d1e10;border-top-right-radius:4px;}
-  .user{background:#8C3C3C;color:#fff;border-top-left-radius:4px;margin-left:auto;}
-  .input-area{display:flex;margin-top:10px;gap:8px;}
-  input,button{padding:10px;border:none;border-radius:10px;}
-  input{flex:1;background:#2B1212;color:#FAF7EF;}
-  button{background:#D4AF37;color:#3E1A1A;font-weight:bold;cursor:pointer;}
-  button:hover{opacity:.9;}
-  .key-box{margin-bottom:10px;text-align:center;}
-  .key-box input{width:100%;text-align:center;}
+  body {
+    font-family: "Tajawal", sans-serif;
+    background: #3E1A1A;
+    color: #FAF7EF;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .app {
+    width: 90%;
+    max-width: 600px;
+    background: #4A1E1E;
+    padding: 16px;
+    border-radius: 14px;
+    box-shadow: 0 0 10px rgba(0,0,0,.3);
+  }
+  h2 {
+    text-align: center;
+    color: #EDE3D6;
+  }
+  .chat {
+    height: 60vh;
+    overflow-y: auto;
+    padding: 10px;
+    background: #411919;
+    border-radius: 10px;
+  }
+  .msg {
+    padding: 10px 14px;
+    margin: 6px 0;
+    border-radius: 10px;
+    max-width: 80%;
+    line-height: 1.5;
+  }
+  .ai {
+    background: #EDE3D6;
+    color: #2d1e10;
+    border-top-right-radius: 4px;
+  }
+  .user {
+    background: #8C3C3C;
+    color: #fff;
+    border-top-left-radius: 4px;
+    margin-left: auto;
+  }
+  .input-area {
+    display: flex;
+    margin-top: 10px;
+    gap: 8px;
+  }
+  input, button {
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+  }
+  input {
+    flex: 1;
+    background: #2B1212;
+    color: #FAF7EF;
+  }
+  button {
+    background: #D4AF37;
+    color: #3E1A1A;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  button:hover { opacity: .9; }
 </style>
 </head>
 <body>
 <div class="app">
-  <h2>🍝 مساعد مطعم لانو الذكي</h2>
-
-  <div class="key-box">
-    <input id="apiKey" type="password" placeholder="🔑 ضع مفتاح OpenAI هنا (مرة واحدة)">
-    <button onclick="saveKey()">حفظ المفتاح</button>
-  </div>
-
+  <h2>🤖 مساعد مطعم لانو</h2>
   <div class="chat" id="chat"></div>
-
   <div class="input-area">
-    <input id="msg" placeholder="اكتب سؤالك أو قل (ابدأ التوصية)...">
+    <input id="msg" placeholder="اسأل مثلاً: ما أكثر الأطباق مبيعًا؟">
     <button id="send">إرسال</button>
   </div>
 </div>
 
 <script>
-const chat=document.getElementById("chat");
-const msg=document.getElementById("msg");
-const send=document.getElementById("send");
+const chat = document.getElementById("chat");
+const msg = document.getElementById("msg");
+const send = document.getElementById("send");
 
-// حفظ مفتاح API
-let apiKey=localStorage.getItem("OPENAI_KEY")||"";
-if(apiKey) document.getElementById("apiKey").value=apiKey;
-
-function saveKey(){
-  apiKey=document.getElementById("apiKey").value.trim();
-  if(apiKey.startsWith("sk-")){localStorage.setItem("OPENAI_KEY",apiKey);alert("✅ تم حفظ المفتاح بنجاح");}
-  else alert("❌ المفتاح غير صالح");
+function addMsg(txt, cls="ai"){
+  const div = document.createElement("div");
+  div.className = "msg " + cls;
+  div.textContent = txt;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
 }
-
-// ترحيب شخصي بالاسم
-let userName = localStorage.getItem("LANO_USER_NAME");
-if (!userName) {
-  userName = prompt("👋 مرحبًا! ما اسمك؟");
-  if (userName) {
-    localStorage.setItem("LANO_USER_NAME", userName);
-  } else {
-    userName = "ضيف";
-  }
-}
-
-function addMsg(txt,cls="ai"){const div=document.createElement("div");div.className="msg "+cls;div.textContent=txt;chat.appendChild(div);chat.scrollTop=chat.scrollHeight;}
 
 async function sendMsg(){
-  const userMsg=msg.value.trim();
-  if(!userMsg)return;
-  msg.value="";
-  addMsg(userMsg,"user");
+  const userMsg = msg.value.trim();
+  if(!userMsg) return;
+  addMsg(userMsg, "user");
+  msg.value = "";
+  addMsg("⏳ جارٍ التحليل...", "ai");
 
-  if(!apiKey){addMsg("⚠️ لم يتم إدخال مفتاح API بعد.","ai");return;}
-
-  addMsg("🤔 جارٍ التفكير...","ai");
-
-  const systemPrompt=`أنت مساعد ذكي رسمي تابع لمطعم لانو الإيطالي.
-تتحدث بأسلوب ترحيبي وودود.
-اسم العميل هو: ${userName}.
-مهامك فقط:
-- مساعدة العميل في معرفة المنيو، الأسعار، والاقتراحات.
-- إذا سُئلت عن شيء لا يخص المطعم، قل بلطف:
-"أنا فقط مساعد مطعم لانو 🍕 أقدر أساعدك في الطلبات أو اقتراح الأطباق."
-كن بشوشًا وتخاطب العميل باسمه دائمًا مثل:
-"أهلًا ${userName}! يسعدني أساعدك اليوم 🌿"
-`;
-
-  const messages=[
-    {role:"system",content:systemPrompt},
-    {role:"user",content:userMsg}
-  ];
-
-  try{
-    const res=await fetch("https://api.openai.com/v1/chat/completions",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "Authorization":`Bearer ${apiKey}`
-      },
-      body:JSON.stringify({model:"gpt-4o-mini",messages,temperature:0.9,max_tokens:400})
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userMsg })
     });
-    const data=await res.json();
+    const data = await res.json();
     chat.lastChild.remove();
-    addMsg(data.choices?.[0]?.message?.content?.trim()||"تعذر الحصول على رد.","ai");
-  }catch(e){
+    addMsg(data.reply || "حدث خطأ في الرد ⚠️", "ai");
+  } catch (e) {
     chat.lastChild.remove();
-    addMsg("⚠️ حدث خطأ أثناء الاتصال بالخدمة.","ai");
-    console.error(e);
+    addMsg("⚠️ تعذر الاتصال بالسيرفر.", "ai");
   }
 }
 
-send.onclick=sendMsg;
-msg.addEventListener("keydown",e=>{if(e.key==="Enter")sendMsg();});
+send.onclick = sendMsg;
+msg.addEventListener("keydown", e => { if(e.key==="Enter") sendMsg(); });
 
-// الترحيب المبدئي باسم المستخدم
-addMsg(`👋 أهلًا ${userName}! يسعدني أساعدك في اختيار وجبتك المثالية من مطعم لانو 🍕✨`,"ai");
+addMsg("مرحباً 👋 أنا مساعد مطعم لانو. اسألني عن المنيو أو الأطباق المميزة 🍝");
 </script>
 </body>
 </html>
