@@ -1,105 +1,125 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🍝 مساعد مطعم لانو الذكي</title>
+  <title>Lano Assistant 🍝</title>
   <style>
     body {
+      background: #faf6f3;
       font-family: "Tajawal", sans-serif;
-      background-color: #3E1A1A;
-      color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       height: 100vh;
       margin: 0;
+      padding: 20px;
     }
     h1 {
-      margin-bottom: 10px;
-      color: #F7EEDB;
+      color: #b45f06;
+      margin-top: 20px;
     }
-    .chat-box {
-      background: #5a2525;
+    #chat-box {
+      background: white;
+      width: 100%;
+      max-width: 450px;
+      height: 70vh;
       border-radius: 15px;
-      padding: 20px;
-      width: 400px;
-      height: 450px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 15px;
       overflow-y: auto;
+      margin-top: 20px;
     }
-    .msg {
-      margin: 10px;
-      padding: 10px;
-      border-radius: 10px;
+    .message {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 15px;
       max-width: 80%;
+      line-height: 1.6;
     }
     .user {
-      background: #8C3C3C;
-      text-align: right;
+      background-color: #e6f7ff;
       align-self: flex-end;
     }
-    .ai {
-      background: #D4AF37;
-      color: #000;
-      text-align: left;
+    .bot {
+      background-color: #fff5e6;
       align-self: flex-start;
     }
-    .input-area {
+    #input-box {
       display: flex;
-      margin-top: 10px;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 450px;
     }
     input {
       flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
     }
     button {
-      background: #D4AF37;
+      background-color: #b45f06;
+      color: white;
       border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      margin-right: 5px;
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-left: 10px;
       cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #8a4704;
     }
   </style>
 </head>
 <body>
-  <h1>🍝 مساعد مطعم لانو الذكي</h1>
-  <div class="chat-box" id="chat">
-    <div class="msg ai">👋 أهلاً! أنا مساعد مطعم لانو، جاهز أساعدك تختار وجبتك المثالية 😋</div>
-  </div>
-  <div class="input-area">
-    <input type="text" id="msg" placeholder="اكتب سؤالك هنا..." />
-    <button onclick="sendMsg()">إرسال</button>
+  <h1>مساعد مطعم لانو 🍝</h1>
+  <div id="chat-box"></div>
+  <div id="input-box">
+    <input type="text" id="user-input" placeholder="اكتب سؤالك هنا..." />
+    <button onclick="sendMessage()">إرسال</button>
   </div>
 
   <script>
-    async function sendMsg() {
-      const msg = document.getElementById("msg").value.trim();
-      if (!msg) return;
-      addMsg(msg, "user");
-      document.getElementById("msg").value = "";
+    const chatBox = document.getElementById("chat-box");
+
+    function addMessage(content, sender) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender);
+      msg.textContent = content;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("user-input");
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      addMessage(userText, "user");
+      input.value = "";
 
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg }),
+        body: JSON.stringify({
+          messages: [{ role: "user", content: userText }]
+        }),
       });
 
       const data = await response.json();
-      addMsg(data.reply || "حدث خطأ أثناء الاتصال 😔", "ai");
+      if (data.reply) {
+        addMessage(data.reply, "bot");
+      } else {
+        addMessage("حدث خطأ في الاتصال 😢", "bot");
+      }
     }
 
-    function addMsg(text, role) {
-      const chat = document.getElementById("chat");
-      const div = document.createElement("div");
-      div.className = "msg " + role;
-      div.textContent = text;
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-    }
+    // رسالة ترحيبية عند فتح الصفحة
+    addMessage("مرحبًا 👋 أنا مساعد مطعم لانو. اسألني عن المنيو أو الأكلات المميزة أو مواعيد العمل!", "bot");
   </script>
 </body>
 </html>
